@@ -22,12 +22,5 @@ import userRouter from "./routes/user.routes.js";
 // routes declarations
 app.use("/api/v1/users", userRouter);
 
-// app.get("/", (req, res) => {
-//   console.log("HIIIIIIII");
-//   res.status(200).json({
-//     success: true,
-//     message: "Welcome to the API",
-//   });
-// })
 
 export { app };
