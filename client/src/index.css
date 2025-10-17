@@ -1,0 +1,110 @@
+/* --- 1. Font Import --- */
+/* We're importing the "Satoshi" font family for its clean and modern feel. */
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap');
+
+
+/* --- 2. Root Variables (Theme Configuration) --- */
+/* This is the central control panel for your app's entire theme. 
+   Changing a color here will update it everywhere it's used. */
+:root {
+  /* Color Palette */
+  --background: #121212;      /* Near Black for main BG */
+  --surface-1: #1F1F1F;       /* Slightly lighter, for sidebars, headers */
+  --surface-2: #2A2A2A;       /* Lighter still, for inputs, hover states */
+  --accent: #BEF264;          /* Electric Lime for primary actions */
+  --accent-hover: #A8D959;    /* A slightly darker lime for hover */
+  --text-primary: #EAEAEA;    /* Light Gray for main text */
+  --text-secondary: #888888;  /* Medium Gray for metadata, placeholders */
+  --error: #EF4444;           /* A vibrant red for errors */
+
+  /* Typography */
+  --font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+
+/* --- 3. Global Styles & Resets --- */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family);
+  background-color: var(--background);
+  color: var(--text-primary);
+  overflow: hidden; /* Prevent body scroll on desktop */
+}
+
+h1, h2, h3, h4, h5, h6, p {
+  margin: 0;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--accent-hover);
+}
+
+
+/* --- 4. Utility Classes --- */
+/* A reusable style for primary action buttons. */
+.button-primary {
+    background-color: var(--accent);
+    color: var(--background);
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+}
+
+.button-primary:hover {
+    background-color: var(--accent-hover);
+}
+
+.button-primary:disabled {
+    background-color: var(--surface-2);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+}
+
+
+/* --- 5. Custom Scrollbar --- */
+/* A polished, dark-themed scrollbar for scrollable areas. */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--surface-1);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--surface-2);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+
+/* --- 6. Animations --- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.modal-content {
+    animation: fadeIn 0.3s ease-in-out;
+}

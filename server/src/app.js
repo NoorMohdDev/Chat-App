@@ -1,4 +1,4 @@
-import express , {urlencoded}from "express";
+import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
@@ -17,10 +17,14 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
 // routes imports
-import userRouter from "./routes/user.routes.js";
+import userRouter from "./routes/userRoutes.js";
+import chatRouter from "./routes/chatRoutes.js";
+import messageRoute from "./routes/messageRoutes.js";
 
 // routes declarations
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/chats", chatRouter);
+app.use("/api/v1/messages", messageRoute);
 
 
 export { app };
