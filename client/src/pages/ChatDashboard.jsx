@@ -8,17 +8,11 @@ const ChatDashboard = () => {
   // State to keep track of the currently active chat
   const [selectedChat, setSelectedChat] = useState(null);
   
-  // // Get the notification clearing function from our SocketContext
-  // const { clearChatNotifications } = useContext(SocketContext);
   const { joinRoom } = useContext(SocketContext);
 
   const handleSelectChat = (chat) => {
     setSelectedChat(chat);
     joinRoom(chat._id)
-    
-    // if (chat) {
-    //   clearChatNotifications(chat._id);
-    // }
   };
 
   // --- Style Objects ---

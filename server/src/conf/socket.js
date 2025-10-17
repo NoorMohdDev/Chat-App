@@ -32,6 +32,15 @@ export const initializeSocketIO = (server) => {
       }
     });
 
+    socket.on("unread_Chat", ({ roomId, chat }) => {
+      // const targetSocketId = users[roomId];
+      console.log("targetSocketId", roomId._id);
+
+      if (roomId._id) {
+        io.to(users[roomId._id]).emit("unread_private_message", { chat });
+      }
+    });
+
     // 🔹 Group chat
     socket.on("join_room", (roomName) => {
       socket.join(roomName);
@@ -45,7 +54,40 @@ export const initializeSocketIO = (server) => {
       });
     });
 
-  
+    // Delete chat (room)
+    socket.on("delete_chat", ({ roomId, chatId }) => {
+      // Notify everyone in the room
+      io.to(users[roomId]).emit("room_deleted", { chatId });
+    });
+
+    // delete groupChat
+    socket.on("delete_chat_group", ({ roomId, chatId }) => {
+      // Notify everyone in the room
+      console.log("roomId", roomId);
+      roomId.map((r) => {
+        console.log(users[r._id], r, chatId);
+
+        io.to(users[r._id]).emit("room_deleted", { chatId });
+      });
+    });
+
+    // show chat (room)
+    socket.on("show_chat", ({ roomId, chat }) => {
+      // Notify everyone in the room
+      io.to(users[roomId._id]).emit("show_chats_client", { chat });
+    });
+
+    // show groupChat
+    socket.on("show_chat_group", ({ roomId, chat }) => {
+      // Notify everyone in the room
+      console.log("roomId", roomId);
+      roomId.map((r) => {
+        console.log(users[r._id], r, chat);
+
+        io.to(users[r._id]).emit("show_chats_client", { chat });
+      });
+    });
+
     socket.on("deleteMessage", ({ roomName, messageId }) => {
       io.to(roomName).emit("deleteMessage_client", {
         from: socket.id,
@@ -60,7 +102,6 @@ export const initializeSocketIO = (server) => {
         message,
       });
     });
-
 
     // --- Disconnect ---
     socket.on("disconnect", (reason) => {

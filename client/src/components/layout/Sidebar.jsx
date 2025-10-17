@@ -7,14 +7,18 @@ import Modal from '../common/Modal.jsx';
 import NewGroupChat from '../chat/NewGroupChat.jsx';
 import ChatListItem from '../chat/ChatListItem.jsx';
 import { SocketContext } from '../../context/SocketContext.jsx';
+import { AuthContext } from '../../context/AuthContext.jsx';
 
 const Sidebar = ({ onSelectChat, selectedChat }) => {
-    const { socket, joinRoom, chats, setChats } = useContext(SocketContext);
+    const { socket, joinRoom, chats, setChats,deleteChat,deleteGroupChat,showGroupChat,unreadMessages, setUnreadMessages } = useContext(SocketContext);
+    const { user } = useContext(AuthContext);
+console.log(chats);
 
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [count, setCount] = useState(0)
 
     const debouncedSearchQuery = useDebounce(searchQuery, 400);
 
@@ -32,7 +36,7 @@ const Sidebar = ({ onSelectChat, selectedChat }) => {
         };
         fetchChats();
     }, []);
-
+    
     useEffect(() => {
         if (!debouncedSearchQuery) return setSearchResults([]);
 
@@ -47,8 +51,6 @@ const Sidebar = ({ onSelectChat, selectedChat }) => {
         handleSearch();
     }, [debouncedSearchQuery]);
 
-    console.log(chats);
-    
     const handleSelectUser = async (userId) => {
         try {
             const { data } = await api.post('/chats', { userId });
@@ -56,7 +58,6 @@ const Sidebar = ({ onSelectChat, selectedChat }) => {
                 setChats([data.data, ...chats]);
             }
             onSelectChat(data.data);
-            console.log(data);
             joinRoom(data.data._id)
             setSearchQuery("");
         } catch (error) {
@@ -64,11 +65,17 @@ const Sidebar = ({ onSelectChat, selectedChat }) => {
         }
     };
 
-    const handleDeleteChat = async (chatId) => {
+    const handleDeleteChat = async (chat,chatId) => {
         if (!window.confirm("Are you sure? This cannot be undone.")) return;
         try {
             await api.delete(`/chats/${chatId}`);
             setChats(prev => prev.filter(c => c._id !== chatId));
+            if (!chat.isGroupChat) {
+                deleteChat(chat.users.filter(u => u._id !== user._id)[0]._id,chat._id)
+            }else{
+                deleteGroupChat(chat.users.map(({_id})=>({_id})),chat._id)
+            }
+                            console.log(chat.users.map(({_id})=>({_id})));
             if (selectedChat?._id === chatId) {
                 onSelectChat(null);
             }
@@ -81,6 +88,9 @@ const Sidebar = ({ onSelectChat, selectedChat }) => {
     const handleGroupCreated = (newGroup) => {
         setChats(prev => [newGroup, ...prev]);
         onSelectChat(newGroup);
+        console.log("newGroup",newGroup.users.map(({_id})=>({_id})).filter(i=>i._id!==user._id));
+        
+        showGroupChat(newGroup.users.map(({_id})=>({_id})).filter(i=>i._id!==user._id),newGroup)
     };
 
     return (
@@ -103,7 +113,6 @@ const Sidebar = ({ onSelectChat, selectedChat }) => {
                         style={{ width: '100%', boxSizing: 'border-box', padding: '12px 12px 12px 45px', borderRadius: '8px', border: 'none', backgroundColor: 'var(--surface-2)', color: 'var(--text-primary)', fontSize: '16px' }}
                     />
                 </div>
-
                 <div style={{ flexGrow: 1, overflowY: 'auto' }}>
                     {searchQuery ? (
                         searchResults.map(user => (
@@ -120,6 +129,8 @@ const Sidebar = ({ onSelectChat, selectedChat }) => {
                                 isSelected={selectedChat?._id === chat._id}
                                 onSelectChat={onSelectChat}
                                 onDeleteChat={handleDeleteChat}
+                                setCount={setCount}
+                                count={count}
                             />
                         ))
                     )}

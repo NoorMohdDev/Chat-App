@@ -14,7 +14,7 @@ export const SocketProvider = ({ children }) => {
   const [messages, setMessages] = useState([]);
   const [groupMessages, setGroupMessages] = useState([]);
   const [chats, setChats] = useState([]);
-
+  const [unreadMessages, setUnreadMessages] = useState([]);
 
   // --- Connect / Disconnect based on user login ---
   useEffect(() => {
@@ -39,33 +39,46 @@ export const SocketProvider = ({ children }) => {
 
     // show chats
     socketRef.current.on("show_chats_client", (data) => {
-      console.log("show_chats_client",data);
+      console.log("client", data.chat);
+
+      setChats((prev) => [...prev, data.chat]);
+    });
+
+    // Handle room private/group deleted event
+    socketRef.current.on("room_deleted", ({ chatId }) => {
+      console.log("room_deleted", chatId);
+
+      setChats((prev) => prev.filter((r) => r._id !== chatId));
+      setGroupMessages(prev => prev.filter(m => m.chat._id !== chatId))
+      setMessages(prev => prev.filter(m => m.chat._id !== chatId))
+    });
+
+    // unread private message
+    socketRef.current.on("unread_private_message", (data) => {
+      console.log("unread_private_message",data);
       
-      setChats((prev) => [...prev, ...data]);
-    });
-    
-    // delete chats
-    socketRef.current.on("delete_chats_client", (data) => {
-      setChats((prev) => prev.filter(c=> c._id!==data.chat._id));
+      setUnreadMessages((prev) => [...prev, {chatId:data.chat.chat._id,content:data.chat.content}]);
     });
 
-    // receive private message
-    socketRef.current.on("receive_private_message", (data) => {
-      setMessages((prev) => [...prev, data.message]);
+    // unread group message
+    socketRef.current.on("unread_group_message", (data) => {
+      setUnreadMessages((prev) => [...prev, data.message]);
     });
 
-    // receive room message
+    // receive group message
     socketRef.current.on("receive_room_message", (data) => {
       setGroupMessages((prev) => [...prev, data.message]);
     });
 
     //delete message
     socketRef.current.on("deleteMessage_client", (data) => {
+      setMessages((prev) => prev.filter(m => m._id !== data.messageId));
       setGroupMessages((prev) => prev.filter(m => m._id !== data.messageId));
     });
 
     //update message
     socketRef.current.on("updateMessage_client", (data) => {
+      setMessages((prev) => prev.map(m => m._id === data.message._id ? data.message : m));
       setGroupMessages((prev) => prev.map(m => m._id === data.message._id ? data.message : m));
     });
 
@@ -86,7 +99,7 @@ export const SocketProvider = ({ children }) => {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [user?._id]);
+  }, []);
 
   // emit functions
   const sendPrivateMessage = (toUserId, message) => {
@@ -113,9 +126,54 @@ export const SocketProvider = ({ children }) => {
     socketRef.current.emit("updateMessage", { roomName, message });
   };
 
+  // Delete chat room
+  const deleteChat = (roomId, chatId) => {
+    console.log(roomId);
+
+    socketRef.current.emit("delete_chat", { roomId, chatId });
+  };
+
+  // Delete group chat room
+  const deleteGroupChat = (roomId, chatId) => {
+    console.log("roomId", roomId);
+    socketRef.current.emit("delete_chat_group", { roomId, chatId });
+  };
+  // show chat room
+  const showChat = (roomId, chat) => {
+    console.log(roomId);
+
+    socketRef.current.emit("show_chat", { roomId, chat });
+  };
+
+  // show group chat room
+  const showGroupChat = (roomId, chat) => {
+    console.log("Group chat", chat);
+    socketRef.current.emit("show_chat_group", { roomId, chat });
+  };
+
+  // unread chat
+  const unreadChat = (roomId, chat) => {
+    console.log("unreadChat",roomId);
+
+    socketRef.current.emit("unread_Chat", { roomId, chat });
+  };
+
+  // unread group chat
+  const unreadGroupChat = (roomId, chat) => {
+    console.log("Group chat", chat);
+    socketRef.current.emit("unread_Group_Chat", { roomId, chat });
+  };
+
   return (
     <SocketContext.Provider
       value={{
+        unreadMessages,
+        setUnreadMessages,
+        unreadChat,
+        unreadGroupChat,
+        showChat,
+        showGroupChat,
+        deleteChat,
         messages,
         setMessages,
         groupMessages,
@@ -126,8 +184,9 @@ export const SocketProvider = ({ children }) => {
         sendRoomMessage,
         deleteMessage,
         updateMessage,
-        chats, 
+        chats,
         setChats,
+        deleteGroupChat,
       }}
     >
       {children}

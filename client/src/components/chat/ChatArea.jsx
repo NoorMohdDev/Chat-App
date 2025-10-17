@@ -7,7 +7,9 @@ import Message from './Message.jsx';
 import { useSocket } from '../../context/SocketContext.jsx';
 
 const ChatArea = ({ selectedChat }) => {
-    const { socket, groupMessages, setGroupMessages, messages, setMessages, sendPrivateMessage, joinRoom, sendRoomMessage, deleteMessage,updateMessage } = useSocket();
+    const { socket, groupMessages, setGroupMessages, messages, setMessages, sendPrivateMessage, joinRoom, sendRoomMessage, deleteMessage, updateMessage, showChat, unreadChat,
+        unreadGroupChat,unreadMessages, setUnreadMessages } = useSocket();
+console.log("unreadMessages",unreadMessages);
 
     const [newMessage, setNewMessage] = useState("");
     const [loading, setLoading] = useState(false);
@@ -77,17 +79,19 @@ const ChatArea = ({ selectedChat }) => {
                 chatId: selectedChat._id,
             });
             console.log(data);
-
             if (data.data.chat.isGroupChat) {
                 setGroupMessages([...groupMessages]);
                 sendRoomMessage(data.data.chat._id, data.data)
+
             } else {
-                setMessages([...messages,data.data]);
+                setMessages([...messages, data.data]);
                 sendPrivateMessage(...data.data.chat.users.filter(u => u !== data.data.sender._id), data.data)
+                console.log("selectedChat", selectedChat);
+
+                messages.length < 1 ? showChat(...selectedChat.users.filter(u => u._id !== user._id).map(({ _id }) => ({ _id })), selectedChat) : null
             }
-            if (messages.length===0) {
-                // showChat(...data.data.chat.users.filter(u => u !== data.data.sender._id),data.data.sender,data.data.content)
-            }
+            
+            unreadChat(...selectedChat.users.filter(u => u._id !== user._id).map(({ _id }) => ({ _id })),data.data)
             // Optimistically update UI
             setNewMessage("");
         } catch (error) {
@@ -98,10 +102,10 @@ const ChatArea = ({ selectedChat }) => {
     const handleUpdateMessage = async (messageId, newContent) => {
         try {
             const { data } = await api.patch(`/messages/${messageId}`, { content: newContent });
-            !selectedChat.isGroupChat?
-            setMessages(prev => prev.map(msg => msg._id === messageId ? data.data : msg)):
-            setGroupMessages(prev => prev.map(msg => msg._id === messageId ? data.data : msg));
-            updateMessage(selectedChat._id,data.data)
+            !selectedChat.isGroupChat ?
+                setMessages(prev => prev.map(msg => msg._id === messageId ? data.data : msg)) :
+                setGroupMessages(prev => prev.map(msg => msg._id === messageId ? data.data : msg));
+            updateMessage(selectedChat._id, data.data)
             toast.success("Message updated.");
         } catch (error) {
             toast.error("Failed to update message.");
@@ -111,10 +115,10 @@ const ChatArea = ({ selectedChat }) => {
     const handleDeleteMessage = async (messageId) => {
         try {
             await api.delete(`/messages/${messageId}`);
-            !selectedChat.isGroupChat?
-            setMessages(prev => prev.filter(m => m._id !== messageId)):
-            setGroupMessages(prev => prev.filter(m => m._id !== messageId));
-            deleteMessage(selectedChat._id,messageId)
+            !selectedChat.isGroupChat ?
+                setMessages(prev => prev.filter(m => m._id !== messageId)) :
+                setGroupMessages(prev => prev.filter(m => m._id !== messageId));
+            deleteMessage(selectedChat._id, messageId)
             toast.success("Message deleted.");
         } catch (error) {
             toast.error("Failed to delete message.");
