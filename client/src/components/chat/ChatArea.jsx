@@ -128,7 +128,9 @@ const ChatArea = ({ selectedChat }) => {
             <div style={{ flexGrow: 1, padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
                 {loading ? (
                     <p>Loading messages...</p>
-                ) : (
+                ) : (!selectedChat?<div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
+                    <p style={{ fontSize: '20px' }}>Select a chat to start messaging</p>
+                </div>:
                     (selectedChat.isGroupChat?
                         groupMessages.map(msg => (
                             <Message

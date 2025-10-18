@@ -49,7 +49,7 @@ const ChatListItem = ({ chat, isSelected, onSelectChat, onDeleteChat }) => {
             <div style={{ flexGrow: 1, marginLeft: '12px', overflow: 'hidden' }}>
                 <p style={{ ...textStyle, margin: 0, fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{displayName}</p>
                 <p style={{ ...secondaryTextStyle, margin: '4px 0 0 0', fontSize: unreadMessages && !isSelected ? "17px" : '14px', fontWeight: !isSelected && unreadMessages ? "700" : "400", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {unreadMessages ? unreadMessages[count - 1]?.content : chat.latestMessage?.content}
+                    {unreadMessages&&!isSelected ? unreadMessages[count - 1]?.content : chat.latestMessage?.content}
                 </p>
             </div>
             {<span style={{

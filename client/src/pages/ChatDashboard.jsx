@@ -6,13 +6,13 @@ import { SocketContext } from '../context/SocketContext.jsx';
 
 const ChatDashboard = () => {
   // State to keep track of the currently active chat
-  const [selectedChat, setSelectedChat] = useState(null);
+  // const [selectedChat, setSelectedChat] = useState(null);
   
-  const { joinRoom } = useContext(SocketContext);
+  const { joinRoom,selectedChat, setSelectedChat } = useContext(SocketContext);
 
   const handleSelectChat = (chat) => {
     setSelectedChat(chat);
-    joinRoom(chat._id)
+    joinRoom(chat?._id)
   };
 
   // --- Style Objects ---

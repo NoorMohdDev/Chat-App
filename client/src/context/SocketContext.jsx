@@ -15,6 +15,7 @@ export const SocketProvider = ({ children }) => {
   const [groupMessages, setGroupMessages] = useState([]);
   const [chats, setChats] = useState([]);
   const [unreadMessages, setUnreadMessages] = useState([]);
+  const [selectedChat, setSelectedChat] = useState(null);
 
   // --- Connect / Disconnect based on user login ---
   useEffect(() => {
@@ -49,22 +50,23 @@ export const SocketProvider = ({ children }) => {
       setChats((prev) => prev.filter((r) => r._id !== chatId));
       setGroupMessages(prev => prev.filter(m => m.chat._id !== chatId))
       setMessages(prev => prev.filter(m => m.chat._id !== chatId))
+      setSelectedChat(null)
     });
 
     // receive private message
     socketRef.current.on("receive_private_message", (data) => {
       setMessages((prev) => [...prev, data.message]);
-      setUnreadMessages((prev) => [...prev, data.message]);      
+      setUnreadMessages((prev) => [...prev, data.message]);
     });
 
     // receive group message
     socketRef.current.on("receive_room_message", (data) => {
-      
+
       setGroupMessages((prev) => [...prev, data.message]);
       setUnreadMessages((prev) => [...prev, data.message]);
     });
 
-  
+
     //delete message
     socketRef.current.on("deleteMessage_client", (data) => {
       setMessages((prev) => prev.filter(m => m._id !== data.messageId));
@@ -110,8 +112,8 @@ export const SocketProvider = ({ children }) => {
   };
 
   const sendRoomMessage = (roomName, message) => {
-    console.log("client",roomName);
-    
+    console.log("client", roomName);
+
     socketRef.current.emit("room_message", { roomName, message });
   };
 
@@ -147,7 +149,7 @@ export const SocketProvider = ({ children }) => {
 
   // unread chat
   const unreadChat = (roomId, chat) => {
-    console.log("unreadChat",roomId);
+    console.log("unreadChat", roomId);
 
     socketRef.current.emit("unread_Chat", { roomId, chat });
   };
@@ -161,6 +163,8 @@ export const SocketProvider = ({ children }) => {
   return (
     <SocketContext.Provider
       value={{
+        selectedChat, 
+        setSelectedChat,
         unreadMessages,
         setUnreadMessages,
         unreadChat,

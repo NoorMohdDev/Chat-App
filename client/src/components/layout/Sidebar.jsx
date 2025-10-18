@@ -10,7 +10,7 @@ import { SocketContext } from '../../context/SocketContext.jsx';
 import { AuthContext } from '../../context/AuthContext.jsx';
 
 const Sidebar = ({ onSelectChat, selectedChat }) => {
-    const { socket, joinRoom, chats, setChats,deleteChat,deleteGroupChat,showGroupChat,} = useContext(SocketContext);
+    const { socket, joinRoom, chats, setChats,deleteChat,deleteGroupChat,showGroupChat,setGroupMessages,setMessages} = useContext(SocketContext);
     const { user } = useContext(AuthContext);
 
     const [searchQuery, setSearchQuery] = useState("");
@@ -74,10 +74,14 @@ const Sidebar = ({ onSelectChat, selectedChat }) => {
                 deleteGroupChat(chat.users.map(({_id})=>({_id})),chat._id)
             }
             if (selectedChat?._id === chatId) {
+                setGroupMessages(prev=> prev.filter(gm=>gm.chat._id!==selectedChat?._id))
+                setMessages(prev=> prev.filter(m=>m.chat._id!==selectedChat?._id))
                 onSelectChat(null);
             }
             toast.success("Chat deleted.");
         } catch (error) {
+            console.log(error);
+            
             toast.error("Failed to delete chat.");
         }
     };
