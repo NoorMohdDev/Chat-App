@@ -58,11 +58,11 @@ const ChatArea = ({ selectedChat }) => {
                 content: newMessage,
                 chatId: selectedChat._id,
             });
-console.log(selectedChat.isGroupChat);
 
             if (selectedChat.isGroupChat) {
                 setGroupMessages([...groupMessages, data.data]);
-                sendRoomMessage(...data.data.users.filter(u => u._id !== user._id).map(({ _id }) => ({ _id })), data.data)
+                
+                sendRoomMessage(data.data.chat.users.filter(u => u !== user._id), data.data)
 
             } else {
                 setMessages([...messages, data.data]);
@@ -74,6 +74,8 @@ console.log(selectedChat.isGroupChat);
             // Optimistically update UI
             setNewMessage("");
         } catch (error) {
+            console.log(error);
+            
             toast.error("Couldn't send message.");
         }
     };

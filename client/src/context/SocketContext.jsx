@@ -59,12 +59,12 @@ export const SocketProvider = ({ children }) => {
 
     // receive group message
     socketRef.current.on("receive_room_message", (data) => {
+      
       setGroupMessages((prev) => [...prev, data.message]);
       setUnreadMessages((prev) => [...prev, data.message]);
-      console.log(data.message);
-      
     });
 
+  
     //delete message
     socketRef.current.on("deleteMessage_client", (data) => {
       setMessages((prev) => prev.filter(m => m._id !== data.messageId));
@@ -110,7 +110,7 @@ export const SocketProvider = ({ children }) => {
   };
 
   const sendRoomMessage = (roomName, message) => {
-    console.log("roomName",roomName);
+    console.log("client",roomName);
     
     socketRef.current.emit("room_message", { roomName, message });
   };

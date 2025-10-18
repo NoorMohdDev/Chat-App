@@ -37,10 +37,11 @@ export const initializeSocketIO = (server) => {
       socket.join(roomName);
       console.log(`${socket.id} joined room ${roomName}`);
     });
-
+      
     socket.on("room_message", ({ roomName, message }) => {
+      
       roomName.map(r=>{
-        io.to(users[r._id]).emit("receive_room_message", {
+        io.to(users[r]).emit("receive_room_message", {
           from: socket.id,
           message,
         });
