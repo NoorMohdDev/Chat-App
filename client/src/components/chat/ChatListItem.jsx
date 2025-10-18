@@ -3,11 +3,19 @@ import { SocketContext } from '../../context/SocketContext.jsx';
 import { AuthContext } from '../../context/AuthContext.jsx';
 import { FiMoreVertical } from 'react-icons/fi';
 
-const ChatListItem = ({ chat, isSelected, onSelectChat, onDeleteChat, count,setCount }) => {
+const ChatListItem = ({ chat, isSelected, onSelectChat, onDeleteChat }) => {
 
-    const { joinRoom,unreadMessages, setUnreadMessages} = useContext(SocketContext);
+    const { joinRoom, unreadMessages, setUnreadMessages } = useContext(SocketContext);
     const { user } = useContext(AuthContext);
     const [menuOpen, setMenuOpen] = useState(false);
+    const [count, setcount] = useState(0)
+
+    useEffect(() => {
+        setcount([...unreadMessages.filter(um => um.chat._id === chat._id)].length)
+        console.log(unreadMessages);
+    }, [unreadMessages])
+
+
 
     // For 1-on-1 chats, find the other user
     const getOtherUser = (users) => users?.find(u => u._id !== user._id);
@@ -36,15 +44,25 @@ const ChatListItem = ({ chat, isSelected, onSelectChat, onDeleteChat, count,setC
     };
 
     return (
-        <div onClick={() => { onSelectChat(chat); joinRoom(chat._id);setCount(0) }} style={itemStyle}>
+        <div onClick={() => { onSelectChat(chat); joinRoom(chat._id); setUnreadMessages(prev => prev.filter(um => um.chat._id !== chat._id)) }} style={itemStyle}>
             <img src={displayPic} alt={displayName} style={{ width: '45px', height: '45px', borderRadius: '50%' }} />
             <div style={{ flexGrow: 1, marginLeft: '12px', overflow: 'hidden' }}>
                 <p style={{ ...textStyle, margin: 0, fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{displayName}</p>
-                <p style={{ ...secondaryTextStyle, margin: '2px 0 0 0', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {chat.latestMessage?.content}
+                <p style={{ ...secondaryTextStyle, margin: '4px 0 0 0', fontSize: unreadMessages && !isSelected ? "17px" : '14px', fontWeight: !isSelected && unreadMessages ? "700" : "400", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {unreadMessages ? unreadMessages[count - 1]?.content : chat.latestMessage?.content}
                 </p>
             </div>
-            {count>0&&!isSelected?<span>{count}</span>:null}
+            {<span style={{
+                backgroundColor: count>0?'#bef264':"#42445A00",
+                color: '#000',
+                fontSize: '11px',
+                fontWeight: '600',
+                borderRadius: '999px',
+                padding: '2px 6px',
+                minWidth: '18px',
+                textAlign: 'center',
+                marginLeft: '8px',
+            }}>{!isSelected && count > 0 ? count<=99?count:"99+" : null}</span>}
             <div style={{ position: 'relative' }}>
                 <FiMoreVertical onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }} style={{ ...secondaryTextStyle, marginLeft: '10px' }} />
                 {menuOpen && (

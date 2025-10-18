@@ -46,28 +46,23 @@ export const SocketProvider = ({ children }) => {
 
     // Handle room private/group deleted event
     socketRef.current.on("room_deleted", ({ chatId }) => {
-      console.log("room_deleted", chatId);
-
       setChats((prev) => prev.filter((r) => r._id !== chatId));
       setGroupMessages(prev => prev.filter(m => m.chat._id !== chatId))
       setMessages(prev => prev.filter(m => m.chat._id !== chatId))
     });
 
-    // unread private message
-    socketRef.current.on("unread_private_message", (data) => {
-      console.log("unread_private_message",data);
-      
-      setUnreadMessages((prev) => [...prev, {chatId:data.chat.chat._id,content:data.chat.content}]);
-    });
-
-    // unread group message
-    socketRef.current.on("unread_group_message", (data) => {
-      setUnreadMessages((prev) => [...prev, data.message]);
+    // receive private message
+    socketRef.current.on("receive_private_message", (data) => {
+      setMessages((prev) => [...prev, data.message]);
+      setUnreadMessages((prev) => [...prev, data.message]);      
     });
 
     // receive group message
     socketRef.current.on("receive_room_message", (data) => {
       setGroupMessages((prev) => [...prev, data.message]);
+      setUnreadMessages((prev) => [...prev, data.message]);
+      console.log(data.message);
+      
     });
 
     //delete message
@@ -115,6 +110,8 @@ export const SocketProvider = ({ children }) => {
   };
 
   const sendRoomMessage = (roomName, message) => {
+    console.log("roomName",roomName);
+    
     socketRef.current.emit("room_message", { roomName, message });
   };
 
@@ -128,8 +125,6 @@ export const SocketProvider = ({ children }) => {
 
   // Delete chat room
   const deleteChat = (roomId, chatId) => {
-    console.log(roomId);
-
     socketRef.current.emit("delete_chat", { roomId, chatId });
   };
 
@@ -140,7 +135,6 @@ export const SocketProvider = ({ children }) => {
   };
   // show chat room
   const showChat = (roomId, chat) => {
-    console.log(roomId);
 
     socketRef.current.emit("show_chat", { roomId, chat });
   };

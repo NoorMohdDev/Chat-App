@@ -7,9 +7,7 @@ import Message from './Message.jsx';
 import { useSocket } from '../../context/SocketContext.jsx';
 
 const ChatArea = ({ selectedChat }) => {
-    const { socket, groupMessages, setGroupMessages, messages, setMessages, sendPrivateMessage, joinRoom, sendRoomMessage, deleteMessage, updateMessage, showChat, unreadChat,
-        unreadGroupChat,unreadMessages, setUnreadMessages } = useSocket();
-console.log("unreadMessages",unreadMessages);
+    const { socket, groupMessages, setGroupMessages, messages, setMessages, sendPrivateMessage, joinRoom, sendRoomMessage, deleteMessage, updateMessage, showChat } = useSocket();
 
     const [newMessage, setNewMessage] = useState("");
     const [loading, setLoading] = useState(false);
@@ -30,7 +28,7 @@ console.log("unreadMessages",unreadMessages);
             setLoading(true);
             try {
                 const { data } = await api.get(`/messages/${selectedChat._id}`);
-                selectedChat.isGroupChat ? setGroupMessages(data.data) : setMessages(data.data);
+                selectedChat.isGroupChat? setGroupMessages(data.data) : setMessages(data.data);
                 joinRoom(selectedChat._id); // Join socket room for this chat
             } catch (error) {
                 toast.error("Could not fetch messages.");
@@ -44,25 +42,6 @@ console.log("unreadMessages",unreadMessages);
     ]);
 
 
-    // Effect for listening to incoming messages in real-time
-    // useEffect(() => {
-    //     if (!socket) return;
-
-    //     const messageListener = (newMessageReceived) => {
-    //         // If the message is for the currently selected chat, update the state
-    //         if (selectedChat?._id === newMessageReceived.chat._id) {
-    //             setMessages((prevMessages) => [...prevMessages, newMessageReceived]);
-    //         }
-    //     };
-
-    //     socket.on('message received', messageListener);
-
-    //     // Clean up the listener when the component unmounts or socket changes
-    //     return () => {
-    //         socket.off('message received', messageListener);
-    //     };
-    // }, [socket, selectedChat]);
-
     // Effect for auto-scrolling
     useEffect(() => {
         scrollToBottom();
@@ -70,6 +49,7 @@ console.log("unreadMessages",unreadMessages);
 
     // --- Action Handlers ---
     const handleSendMessage = async (e) => {
+
         e.preventDefault();
         if (!newMessage.trim()) return;
 
@@ -78,20 +58,19 @@ console.log("unreadMessages",unreadMessages);
                 content: newMessage,
                 chatId: selectedChat._id,
             });
-            console.log(data);
-            if (data.data.chat.isGroupChat) {
-                setGroupMessages([...groupMessages]);
-                sendRoomMessage(data.data.chat._id, data.data)
+console.log(selectedChat.isGroupChat);
+
+            if (selectedChat.isGroupChat) {
+                setGroupMessages([...groupMessages, data.data]);
+                sendRoomMessage(...data.data.users.filter(u => u._id !== user._id).map(({ _id }) => ({ _id })), data.data)
 
             } else {
                 setMessages([...messages, data.data]);
                 sendPrivateMessage(...data.data.chat.users.filter(u => u !== data.data.sender._id), data.data)
-                console.log("selectedChat", selectedChat);
 
                 messages.length < 1 ? showChat(...selectedChat.users.filter(u => u._id !== user._id).map(({ _id }) => ({ _id })), selectedChat) : null
             }
-            
-            unreadChat(...selectedChat.users.filter(u => u._id !== user._id).map(({ _id }) => ({ _id })),data.data)
+
             // Optimistically update UI
             setNewMessage("");
         } catch (error) {
@@ -115,7 +94,7 @@ console.log("unreadMessages",unreadMessages);
     const handleDeleteMessage = async (messageId) => {
         try {
             await api.delete(`/messages/${messageId}`);
-            !selectedChat.isGroupChat ?
+            !selectedChat.isGroupChat?
                 setMessages(prev => prev.filter(m => m._id !== messageId)) :
                 setGroupMessages(prev => prev.filter(m => m._id !== messageId));
             deleteMessage(selectedChat._id, messageId)
@@ -136,7 +115,6 @@ console.log("unreadMessages",unreadMessages);
 
     const otherUser = selectedChat.users?.find(u => u._id !== user._id);
     const displayName = selectedChat.isGroupChat ? selectedChat.chatName : otherUser?.name;
-    console.log(groupMessages);
 
     return (
         <main style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', backgroundColor: 'var(--background)' }}>
@@ -149,7 +127,7 @@ console.log("unreadMessages",unreadMessages);
                 {loading ? (
                     <p>Loading messages...</p>
                 ) : (
-                    (selectedChat.isGroupChat ?
+                    (selectedChat.isGroupChat?
                         groupMessages.map(msg => (
                             <Message
                                 key={msg._id}

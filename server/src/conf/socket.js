@@ -32,15 +32,6 @@ export const initializeSocketIO = (server) => {
       }
     });
 
-    socket.on("unread_Chat", ({ roomId, chat }) => {
-      // const targetSocketId = users[roomId];
-      console.log("targetSocketId", roomId._id);
-
-      if (roomId._id) {
-        io.to(users[roomId._id]).emit("unread_private_message", { chat });
-      }
-    });
-
     // 🔹 Group chat
     socket.on("join_room", (roomName) => {
       socket.join(roomName);
@@ -48,10 +39,12 @@ export const initializeSocketIO = (server) => {
     });
 
     socket.on("room_message", ({ roomName, message }) => {
-      io.to(roomName).emit("receive_room_message", {
-        from: socket.id,
-        message,
-      });
+      roomName.map(r=>{
+        io.to(users[r._id]).emit("receive_room_message", {
+          from: socket.id,
+          message,
+        });
+      })
     });
 
     // Delete chat (room)
@@ -63,10 +56,7 @@ export const initializeSocketIO = (server) => {
     // delete groupChat
     socket.on("delete_chat_group", ({ roomId, chatId }) => {
       // Notify everyone in the room
-      console.log("roomId", roomId);
       roomId.map((r) => {
-        console.log(users[r._id], r, chatId);
-
         io.to(users[r._id]).emit("room_deleted", { chatId });
       });
     });
@@ -80,10 +70,7 @@ export const initializeSocketIO = (server) => {
     // show groupChat
     socket.on("show_chat_group", ({ roomId, chat }) => {
       // Notify everyone in the room
-      console.log("roomId", roomId);
       roomId.map((r) => {
-        console.log(users[r._id], r, chat);
-
         io.to(users[r._id]).emit("show_chats_client", { chat });
       });
     });

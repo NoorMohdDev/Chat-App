@@ -10,15 +10,13 @@ import { SocketContext } from '../../context/SocketContext.jsx';
 import { AuthContext } from '../../context/AuthContext.jsx';
 
 const Sidebar = ({ onSelectChat, selectedChat }) => {
-    const { socket, joinRoom, chats, setChats,deleteChat,deleteGroupChat,showGroupChat,unreadMessages, setUnreadMessages } = useContext(SocketContext);
+    const { socket, joinRoom, chats, setChats,deleteChat,deleteGroupChat,showGroupChat,} = useContext(SocketContext);
     const { user } = useContext(AuthContext);
-console.log(chats);
 
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [count, setCount] = useState(0)
 
     const debouncedSearchQuery = useDebounce(searchQuery, 400);
 
@@ -75,7 +73,6 @@ console.log(chats);
             }else{
                 deleteGroupChat(chat.users.map(({_id})=>({_id})),chat._id)
             }
-                            console.log(chat.users.map(({_id})=>({_id})));
             if (selectedChat?._id === chatId) {
                 onSelectChat(null);
             }
@@ -129,8 +126,6 @@ console.log(chats);
                                 isSelected={selectedChat?._id === chat._id}
                                 onSelectChat={onSelectChat}
                                 onDeleteChat={handleDeleteChat}
-                                setCount={setCount}
-                                count={count}
                             />
                         ))
                     )}

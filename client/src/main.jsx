@@ -10,7 +10,6 @@ const rootElement = document.getElementById('root');
 const root = ReactDOM.createRoot(rootElement);
 
 root.render(
-  <React.StrictMode>
     <BrowserRouter>
       <AuthProvider>
         <SocketProvider>
@@ -18,5 +17,4 @@ root.render(
         </SocketProvider>
       </AuthProvider>
     </BrowserRouter>
-  </React.StrictMode>
 );
